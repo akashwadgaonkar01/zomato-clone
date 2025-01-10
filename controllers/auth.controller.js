@@ -1,0 +1,188 @@
+const asyncHandler = require('express-async-handler')
+const validator = require('validator')
+const jwt = require('jsonwebtoken')
+const bcrypt = require("bcryptjs");
+const Admin = require('../models/Admin')
+const { generateOtp } = require('../utils/otp')
+const { sendEmail } = require('../utils/email')
+const { differenceInSeconds } = require("date-fns")
+const Restaurant = require('../models/Restaurant');
+const Customer = require('../models/Customer');
+
+exports.registerAdmin = asyncHandler(async (req, res) => {
+    const { name, email, mobile } = req.body
+    if (validator.isEmpty(name) || validator.isEmpty(email) || validator.isEmpty(mobile)) {
+        return res.status(400).json({ message: 'all fields required' })
+    }
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ message: 'invalid email' })
+    }
+    if (!validator.isMobilePhone(mobile, "en-IN")) {
+        return res.status(400).json({ message: 'invalid mobile' })
+    }
+    await Admin.create({ name, email, mobile })
+    res.json({ message: "admin register success" })
+
+})
+
+exports.loginAdmin = asyncHandler(async (req, res) => {
+    const { userName } = req.body
+    const result = await Admin.findOne({ $or: [{ email: userName }, { mobile: userName }] })
+    if (!result) {
+        return res.status(400).json({ message: "invalid credentials" })
+    }
+    const otp = generateOtp()
+    await Admin.findByIdAndUpdate(result._id, { otp, otpSendOn: Date.now() })
+    // await sendSMS({number: result.mobile, message: `your otp is ${otp}`})
+    await sendEmail({
+        message: `<h1>your otp is ${otp}</h1>`,
+        subject: "verify otp to login",
+        to: result.email
+    })
+    res.json({ message: "otp send success, enter otp in 40 sec" })
+})
+
+exports.verifyAdminOTP = asyncHandler(async (req, res) => {
+    const { otp, userName } = req.body
+    const result = await Admin.findOne({ $or: [{ email: userName }, { mobile: userName }] })
+    if (!result) {
+        return res.status(401).json({ message: "invalid credentials" })
+    }
+    if (result.otp !== otp) {
+        return res.status(401).json({ message: "invalid otp" })
+    }
+    if (differenceInSeconds(Date.now(), result.otpSendOn) > process.env.OTP_EXPIRE) {
+        await Admin.findByIdAndUpdate(result._id, { otp: null })
+        return res.status(401).json({ message: "otp expired" })
+    }
+    await Admin.findByIdAndUpdate(result._id, { otp: null })
+    const token = jwt.sign({ _id: result._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    res.cookie("zomato-admin", token, {
+        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true,
+        secure: process.env.NODE_ENV = "production",
+    })
+    res.json({
+        message: "login success",
+        result: {
+            name: result.name,
+            email: result.email,
+        }
+    })
+})
+
+exports.logoutAdmin = asyncHandler(async (req, res) => {
+    res.clearCookie("zomato-admin")
+    res.json({ message: " admin logout success" })
+})
+
+exports.registerRestaurant = asyncHandler(async (req, res) => {
+    const { email, password } = req.body
+    const result = await Restaurant.findOne({ email })
+    if (result) {
+        return res.status(409).json({ message: "email already registered" })
+    }
+    const hash = await bcrypt.hash(password, 10)
+    await Restaurant.create({ ...req.body, password: hash })
+    res.json({ message: "restaurant register success" })
+})
+
+exports.loginRestaurant = async (req, res) => {
+    const { email, password } = req.body
+    const result = await Restaurant.findOne({ email })
+    if (!result) {
+        return res.status(401).json({ message: "invalid credentials email" })
+    }
+    const isVerify = await bcrypt.compare(password, result.password)
+    if (!isVerify) {
+        return res.status(401).json({ message: "invalid credentials password" })
+    }
+
+    const token = jwt.sign({ _id: result._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+
+    res.cookie("restaurant", token, {
+        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production"
+    })
+
+    res.json({
+        message: "restaurant login success", result: {
+            _id: result._id,
+            name: result.name,
+            email: result.email,
+            infoComplete: result.infoComplete,
+        }
+    })
+}
+
+exports.logoutRestaurant = async (req, res) => {
+    res.clearCookie("restaurant")
+    res.json({ message: "restaurant logout success" })
+}
+
+exports.registerCustomer = asyncHandler(async (req, res) => {
+    const { name, email, mobile } = req.body
+    const result = await Customer.findOne({ $or: [{ mobile }, { email }] })
+    if (result) {
+        return res.status(409).json({ message: "email or mobile already registered" })
+    }
+    // const hash = await bcrypt.hash(password, 10)
+    await Customer.create(req.body)
+    res.json({ message: "Customer register success" })
+})
+
+exports.loginCustomer = asyncHandler(async (req, res) => {
+    const { userName } = req.body
+    const result = await Customer.findOne({ $or: [{ email: userName }, { mobile: userName }] })
+    console.log(result);
+
+    if (!result) {
+        return res.status(400).json({ message: "invalid credentials" })
+    }
+    const otp = generateOtp()
+    await Customer.findByIdAndUpdate(result._id, { otp, otpSendOn: Date.now() })
+    // await sendSMS({number: result.mobile, message: `your otp is ${otp}`})
+    await sendEmail({
+        message: `<h1>your otp is ${otp}</h1>`,
+        subject: "verify otp to login",
+        to: result.email
+    })
+    res.json({ message: "otp send success, enter otp in 40 sec" })
+})
+
+exports.verifyCustomerOTP = asyncHandler(async (req, res) => {
+    const { otp, userName } = req.body
+    const result = await Customer.findOne({ $or: [{ email: userName }, { mobile: userName }] })
+    if (!result) {
+        return res.status(401).json({ message: "invalid credentials" })
+    }
+    if (result.otp !== otp) {
+        return res.status(401).json({ message: "invalid otp" })
+    }
+    if (differenceInSeconds(Date.now(), result.otpSendOn) > process.env.OTP_EXPIRE) {
+        await Customer.findByIdAndUpdate(result._id, { otp: null })
+        return res.status(401).json({ message: "otp expired" })
+    }
+    await Customer.findByIdAndUpdate(result._id, { otp: null })
+    const token = jwt.sign({ _id: result._id }, process.env.JWT_SECRET, { expiresIn: "365d" })
+    res.cookie("zomato-customer", token, {
+        maxAge: 1000 * 60 * 60 * 24 * 365,
+        httpOnly: true,
+        secure: process.env.NODE_ENV = "production",
+    })
+    res.json({
+        message: "login success",
+        result: {
+            name: result.name,
+            email: result.email,
+            mobile: result.mobile,
+            infoComplete: result.infoComplete,
+        }
+    })
+})
+
+exports.logoutCustomer = asyncHandler(async (req, res) => {
+    res.clearCookie("zomato-customer")
+    res.json({ message: " customer logout success" })
+})
