@@ -3,6 +3,7 @@ const axios = require('axios')
 const { checkEmpty } = require("../utils/checkEmpty")
 const Customer = require("../models/Customer")
 const Restaurant = require("../models/Restaurant")
+const Menu = require("../models/Menu")
 
 exports.getLocation = asyncHandler(async (req, res) => {
     const { latitude, longitude } = req.body
@@ -46,7 +47,11 @@ exports.updateCustomerInfo = asyncHandler(async (req, res) => {
     //setLoc(data.results[0].formatted)
 })
 
-exports.getResturant = asyncHandler(async (req, res) => {
-    const result = await Restaurant.find(req.body)
-    res.json({ message: "resturant get success", result })
+exports.getRestaurant = asyncHandler(async (req, res) => {
+    const result = await Restaurant.find({ isActive: true }).select("-password -createdAt -updatedAt -__v -isActive -infoComplete -certificate")
+    res.json({ message: "restaurant get success", result })
+})
+exports.getRestaurantMenu = asyncHandler(async (req, res) => {
+    const result = await Menu.find({ restaurant: req.params.rid }).select("-createdAt -updatedAt -__v ")
+    res.json({ message: "menu fetch success", result })
 })
