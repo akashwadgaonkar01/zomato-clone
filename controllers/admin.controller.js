@@ -44,22 +44,22 @@ exports.getAdminCustomer = asyncHandler(async (req, res) => {
     })
 })
 
-exports.getAdminRider = asyncHandler(async (req, res) => {
-    const { limit, skip } = req.query
-    const total = await Rider.countDocuments()
-    const result = await Rider
-        .find(req.body)
-        .select(" -createdAt -updatedAt -__v")
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .skip(skip)
-    res.json({
-        message: "rider fetch success", result: {
-            riders: result,
-            total: total,
-        }
-    })
-})
+// exports.getAdminRider = asyncHandler(async (req, res) => {
+//     const { limit, skip } = req.query
+//     const total = await Rider.countDocuments()
+//     const result = await Rider
+//         .find(req.body)
+//         .select(" -createdAt -updatedAt -__v")
+//         .sort({ createdAt: -1 })
+//         .limit(limit)
+//         .skip(skip)
+//     res.json({
+//         message: "rider fetch success", result: {
+//             riders: result,
+//             total: total,
+//         }
+//     })
+// })
 
 exports.getAdminOrder = asyncHandler(async (req, res) => {
     const { limit, skip } = req.query
@@ -122,6 +122,7 @@ exports.getAdminRider = asyncHandler(async (req, res) => {
     const result = await Rider
         .find()
         .select("-password -createdAt -updatedAt -__v")
+        .populate("rider", "name mobile")
         .sort({ createdAt: -1 })
         .limit(limit)
         .skip(skip)

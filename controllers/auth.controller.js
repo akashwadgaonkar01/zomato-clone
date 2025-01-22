@@ -8,6 +8,7 @@ const { sendEmail } = require('../utils/email')
 const { differenceInSeconds } = require("date-fns")
 const Restaurant = require('../models/Restaurant');
 const Customer = require('../models/Customer');
+const Rider = require('../models/Rider');
 
 exports.registerAdmin = asyncHandler(async (req, res) => {
     const { name, email, mobile } = req.body
