@@ -162,6 +162,15 @@ exports.getAdminRider = asyncHandler(async (req, res) => {
     })
 })
 
+exports.getAdminActiveRider = asyncHandler(async (req, res) => {
+    const result = await Rider
+        .find({ isActive: true })
+        .select("-password -createdAt -updatedAt -__v")
+    res.json({
+        message: "rider fetch success", result
+    })
+})
+
 exports.updateAdminRider = asyncHandler(async (req, res) => {
     riderUpload(req, res, async (err) => {
         if (err) {
