@@ -7,7 +7,7 @@ const riderSchema = new mongoose.Schema({
     password: { type: String, required: true },
     address: { type: String, required: true },
     city: { type: String, required: true },
-    gender: { type: String,enum: ["male", "female"], required: true },
+    gender: { type: String, enum: ["male", "female"], required: true },
     isActive: { type: Boolean, default: false },
     licence: { type: String, required: true },
     rc: { type: String, required: true },
