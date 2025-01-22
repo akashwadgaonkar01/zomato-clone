@@ -116,35 +116,6 @@ exports.registerAdminRider = asyncHandler(async (req, res) => {
     })
 })
 
-exports.loginRider = asyncHandler(async (req, res) => {
-    // step 1 verify email
-    const { email, password } = req.body;
-    const result = await Rider.findOne({ email });
-    if (!result) {
-        res.status(401).json({ message: "email not found" });
-    }
-    // step 2 verify password
-    const verify = await bcrypt.compare(password, result.password);
-    if (!verify) {
-        res.status(401).json({ message: "password do not match" });
-    }
-    // step 3 create token and send cookie
-    const token = jwt.sign({ _id: result._id }, process.env.JWT_SECRET, {
-        expiresIn: "365d",
-    });
-    res.cookie("zomato-rider", token, {
-        maxage: 1000 * 60 * 60 * 24 * 365,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "prod" ? true : false, // keeps false for local and true for
-    });
-    res.json({ message: "rider login success", result });
-});
-
-exports.logoutRider = asyncHandler(async (req, res) => {
-    res.clearCookie("zomato-rider");
-    res.json({ message: "rider logout success" });
-});
-
 exports.getAdminRider = asyncHandler(async (req, res) => {
     const { limit, skip } = req.query
     const total = await Rider.countDocuments()
@@ -216,4 +187,10 @@ exports.updateRiderAccount = asyncHandler(async (req, res) => {
     const { rid } = req.params
     await Rider.findByIdAndUpdate(rid, { isActive: req.body.isActive })
     res.json({ message: "rider account update success" })
+})
+
+exports.assignRider = asyncHandler(async (req, res) => {
+    const { oid } = req.params
+    await Order.findByIdAndUpdate(oid, { rider: req.body.rider })
+    res.json({ message: "rider assign success" })
 })

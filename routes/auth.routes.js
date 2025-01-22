@@ -1,5 +1,4 @@
-const { loginRider, logoutRider } = require("../controllers/admin.controller")
-const { registerAdmin, loginAdmin, logoutAdmin, verifyAdminOTP, loginRestaurant, logoutRestaurant, registerRestaurant, registerCustomer, loginCustomer, verifyCustomerOTP, logoutCustomer } = require("../controllers/auth.controller")
+const { registerAdmin, loginAdmin, logoutAdmin, verifyAdminOTP, loginRestaurant, logoutRestaurant, registerRestaurant, registerCustomer, loginCustomer, verifyCustomerOTP, logoutCustomer, loginRider, logoutRider } = require("../controllers/auth.controller")
 
 const router = require("express").Router()
 

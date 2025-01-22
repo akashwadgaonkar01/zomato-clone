@@ -1,4 +1,4 @@
-const { getAdminCustomer, getAdminOrder, getAdminRestaurant, riderRegister, getAdminRider, registerAdminRider, updateAdminRider, updateRiderAccount, loginRider, logoutRider, getAdminActiveRider } = require("../controllers/admin.controller")
+const { getAdminCustomer, getAdminOrder, getAdminRestaurant, riderRegister, getAdminRider, registerAdminRider, updateAdminRider, updateRiderAccount, loginRider, logoutRider, getAdminActiveRider, assignRider } = require("../controllers/admin.controller")
 
 const router = require("express").Router()
 
@@ -9,8 +9,10 @@ router
 
     .post("/register-rider", registerAdminRider)
     .get("/get-rider", getAdminRider)
-    .get("/get-active-rider", getAdminActiveRider)
     .put("/update-rider/:rid", updateAdminRider)
     .put("/update-rider-account/:rid", updateRiderAccount)
+
+    .get("/get-active-rider", getAdminActiveRider)
+    .put("/assign-rider/:oid", assignRider)
 
 module.exports = router
