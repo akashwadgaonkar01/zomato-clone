@@ -44,23 +44,6 @@ exports.getAdminCustomer = asyncHandler(async (req, res) => {
     })
 })
 
-// exports.getAdminRider = asyncHandler(async (req, res) => {
-//     const { limit, skip } = req.query
-//     const total = await Rider.countDocuments()
-//     const result = await Rider
-//         .find(req.body)
-//         .select(" -createdAt -updatedAt -__v")
-//         .sort({ createdAt: -1 })
-//         .limit(limit)
-//         .skip(skip)
-//     res.json({
-//         message: "rider fetch success", result: {
-//             riders: result,
-//             total: total,
-//         }
-//     })
-// })
-
 exports.getAdminOrder = asyncHandler(async (req, res) => {
     const { limit, skip } = req.query
     const total = await Order.countDocuments()
@@ -68,6 +51,7 @@ exports.getAdminOrder = asyncHandler(async (req, res) => {
         .find(req.body)
         .select(" -createdAt -updatedAt -__v")
         .populate("restaurant", "name email mobile")
+        .populate("rider", "name email mobile")
         .populate("customer", "name email mobile")
         .populate("items.dish", "name type price")
         .sort({ createdAt: -1 })
@@ -193,5 +177,8 @@ exports.updateRiderAccount = asyncHandler(async (req, res) => {
 exports.assignRider = asyncHandler(async (req, res) => {
     const { oid } = req.params
     await Order.findByIdAndUpdate(oid, { rider: req.body.rider })
+
+    const result = await Order.find({ rider: req.body.rider })
+    io.emit("rider-orders", result)
     res.json({ message: "rider assign success" })
 })
