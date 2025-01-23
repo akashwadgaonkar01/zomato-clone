@@ -3,12 +3,13 @@ const Restaurant = require("../models/Restaurant")
 const Customer = require("../models/Customer")
 const Order = require("../models/Order")
 const Rider = require("../models/Rider")
-const { sendEmail } = require("../utils/email")
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cloud = require("../utils/cloudinary")
+const { sendEmail } = require("../utils/email")
 const { checkEmpty } = require("../utils/checkEmpty")
 const { riderUpload } = require("../utils/upload")
-const cloud = require("../utils/cloudinary")
+const { io } = require("../socket/socket")
 
 exports.getAdminRestaurant = asyncHandler(async (req, res) => {
     const { limit, skip } = req.query
