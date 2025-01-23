@@ -68,6 +68,7 @@ exports.placeOrder = asyncHandler(async (req, res) => {
 exports.getOrders = asyncHandler(async (req, res) => {
     const result = await Order
         .find({ customer: req.user }).select("-customer -createdAt -updatedAt -__v")
+        .populate("rider", "name mobile")
         .populate("restaurant", "name hero")
         .populate("items.dish", "name type image price")
         .sort({ createdAt: -1 })
