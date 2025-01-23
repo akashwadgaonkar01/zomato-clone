@@ -46,6 +46,7 @@ exports.adminProtected = asyncHandler(async (req, res, next) => {
         next()
     })
 })
+
 exports.riderProtected = asyncHandler(async (req, res, next) => {
     const token = req.cookies["zomato-rider"]
     if (!token) {
