@@ -107,7 +107,6 @@ exports.getAdminRider = asyncHandler(async (req, res) => {
     const result = await Rider
         .find()
         .select("-password -createdAt -updatedAt -__v")
-        .populate("rider", "name mobile")
         .sort({ createdAt: -1 })
         .limit(limit)
         .skip(skip)

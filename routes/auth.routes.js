@@ -17,7 +17,7 @@ router
     .post("/login-restaurant", loginRestaurant)
     .post("/logout-restaurant", logoutRestaurant)
 
-    .post("/signin-rider", loginRider)
-    .post("/signout-rider", logoutRider)
+    .post("/login-rider", loginRider)
+    .post("/logout-rider", logoutRider)
 
 module.exports = router

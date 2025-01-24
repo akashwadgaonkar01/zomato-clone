@@ -4,7 +4,7 @@ const { io } = require("../socket/socket")
 
 exports.getRiderOrders = asyncHandler(async (req, res) => {
     const result = await Order
-        .find({ rider: req.user })
+        .find({ rider: req.user, status: "delivered" })
         .select("-rider -createdAt -updatedAt -__v")
         .populate("customer", "name mobile address") // joins
         .populate("restaurant", "name hero mobile address") // joins
