@@ -57,9 +57,9 @@ exports.verifyAdminOTP = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: "otp expired" })
     }
     await Admin.findByIdAndUpdate(result._id, { otp: null })
-    const token = jwt.sign({ _id: result._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    const token = jwt.sign({ _id: result._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
     res.cookie("zomato-admin", token, {
-        maxAge: 1000 * 60 * 60 * 24,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
         httpOnly: true,
         secure: process.env.NODE_ENV = "production",
     })
