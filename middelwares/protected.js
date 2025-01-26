@@ -52,10 +52,14 @@ exports.riderProtected = asyncHandler(async (req, res, next) => {
     if (!token) {
         return res.status(401).json({ message: "no cookie found" })
     }
-    jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decode) => {
         if (err) {
             console.log(err)
             return res.status(401).json({ message: "invalid token" })
+        }
+        const result = await Rider.findById(decode._id)
+        if (!result.isActive) {
+            return res.status(401).json({ message: "account blocked by admin" })
         }
         req.user = decode._id
         next()
