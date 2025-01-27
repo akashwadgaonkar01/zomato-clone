@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler")
 const jwt = require("jsonwebtoken")
+const Rider = require("../models/Rider")
 
 exports.restaurantProtected = asyncHandler(async (req, res, next) => {
     const token = req.cookies.restaurant
